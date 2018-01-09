@@ -1,0 +1,103 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<assert.h>
+#include<string.h>
+
+typedef struct noeud {
+    char info;
+    struct noeud *fils, *frere;
+} NOEUD, *PTR;
+
+
+// inserer un nouveau noeud
+PTR noeud(char info, PTR fils, PTR frere) {
+    PTR p = malloc(sizeof(NOEUD));
+    assert(p != NULL);
+    p->info = info;
+    p->fils = fils;
+    p->frere = frere;
+    return p;
+}
+
+
+void read_file(PTR ancetre) 
+{
+	char *ch;
+	ch = (char*)malloc(sizeof(char));	
+	FILE *f;
+	f=fopen("dict.txt","rt+");
+	rewind(f);
+	while(fgets (ch, 20, f)!=NULL){
+	//printf("\n %s \n",ch);
+	rechinsertion(ch, ancetre);
+		}
+}
+
+
+int rechinsertion(char mot[], PTR ancetre) {
+    PTR pr, pc;
+    int i;
+    /* à chaque tour de cette boucle on recherche le caractère */
+    /* mot[i] parmi les fils du nœud pointé par ancetre */
+    for(i = 0; ; i++) {
+        pr = NULL;
+        pc = ancetre->fils;
+        while (pc != NULL && pc->info < mot[i]) {
+            pr = pc;
+            pc = pc->frere;
+        }
+        if (pc != NULL && pc->info == mot[i]) {
+            if (mot[i] == '\0')
+                return 1; /* le mot existait */
+            ancetre = pc;
+        }
+        else {
+            pc = noeud(mot[i], NULL, pc);
+            if (pr != NULL)
+                pr->frere = pc;
+            else
+                ancetre->fils = pc;
+            while (mot[i] != '\0') {
+                pc->fils = noeud(mot[++i], NULL, NULL);
+                pc = pc->fils;
+            }
+            return 0; /* le mot est nouveau */
+        }
+    }
+}
+
+
+
+
+	static struct {
+	    char t[80];
+	    int n;
+	} pile;
+
+	void parcours(PTR arbre) {
+	    PTR p;
+	    pile.t[pile.n++] = arbre->info;
+	    if (arbre->info == '\0')
+		{printf("%s\n", pile.t + 1);printf("\nhere\n");}
+	    else
+		for (p = arbre->fils; p != NULL; p = p->frere)
+		    parcours(p);
+	    pile.n--;
+	}
+
+
+
+
+	void main() {
+	    char mot[80];
+	    int i;
+	    PTR racine = noeud('!', NULL, NULL);
+	    read_file(racine);
+
+	    pile.n = 0;
+	    parcours(racine);
+	}
+
+
+
+
